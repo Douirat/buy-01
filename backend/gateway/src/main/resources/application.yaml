@@ -1,3 +1,30 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: gateway
+
+  cloud:
+    gateway:
+      routes:
+
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/users/**
+
+        - id: product-service
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/products/**
+
+        - id: media-service
+          uri: lb://MEDIA-SERVICE
+          predicates:
+            - Path=/media/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
