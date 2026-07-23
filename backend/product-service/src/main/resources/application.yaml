@@ -1,6 +1,9 @@
 spring:
   application:
     name: product-service   # this exact name is how the gateway will find it
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/product-service
 eureka:
   client:
     service-url:
