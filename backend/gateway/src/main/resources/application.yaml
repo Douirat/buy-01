@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: gateway
+    name: api-gateway
 
   data:
     redis:
@@ -12,66 +12,141 @@ spring:
 
   cloud:
     gateway:
+      # --- Global CORS (Cross-Origin) config, applied before routes ---
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:4200"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
+      # --- ROUTING ---
+      # Each route maps an incoming path (predicate) to a downstream service.
+      # `lb://SERVICE-NAME` = "ask Eureka for instances of SERVICE-NAME and
+      # LOAD BALANCE across them" -> covers routing + load balancing together.
       routes:
 
-        # =========================
-        # USER SERVICE
-        # =========================
-
         - id: user-service
-
           uri: lb://USER-SERVICE
-
           predicates:
-            - Path=/users/**
+            - Path=/api/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userServiceCB
+                fallbackUri: forward:/fallback/users
+            - name: Retry
+              args:
+                retries: 2
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+                methods: GET
+            - StripPrefix=0
 
+        - id: auth-service
+          # Auth endpoints (login/register) must be reachable WITHOUT a JWT,
+          # so this route is explicitly excluded in the JWT filter (see below).
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/api/auth/**
           filters:
             - name: RequestRateLimiter
               args:
+                redis-rate-limiter.replenishRate: 5   # sustained req/sec allowed
+                redis-rate-limiter.burstCapacity: 10   # short burst allowed
                 key-resolver: "#{@ipKeyResolver}"
-                redis-rate-limiter.replenishRate: 5
-                redis-rate-limiter.burstCapacity: 10
-
-
-        # =========================
-        # PRODUCT SERVICE
-        # =========================
 
         - id: product-service
-
           uri: lb://PRODUCT-SERVICE
-
           predicates:
-            - Path=/products/**
-
+            - Path=/api/products/**
           filters:
             - name: RequestRateLimiter
               args:
-                key-resolver: "#{@ipKeyResolver}"
-                redis-rate-limiter.replenishRate: 10
-                redis-rate-limiter.burstCapacity: 20
-
-
-        # =========================
-        # MEDIA SERVICE
-        # =========================
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: productServiceCB
+                fallbackUri: forward:/fallback/products
 
         - id: media-service
-
           uri: lb://MEDIA-SERVICE
-
           predicates:
-            - Path=/media/**
-
+            - Path=/api/media/**
           filters:
-            - name: RequestRateLimiter
+            - name: CircuitBreaker
               args:
-                key-resolver: "#{@ipKeyResolver}"
-                redis-rate-limiter.replenishRate: 3
-                redis-rate-limiter.burstCapacity: 6
+                name: mediaServiceCB
+                fallbackUri: forward:/fallback/media
 
+        # --- PROTOCOL TRANSLATION example ---
+        # Plain HTTP clients hit /ws/** and the gateway upgrades/forwards
+        # to a WebSocket-speaking backend (e.g. a notifications service).
+        - id: notification-ws
+          uri: lb:ws://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/ws/**
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      userServiceCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+      productServiceCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      mediaServiceCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+  timelimiter:
+    instances:
+      userServiceCB:
+        timeoutDuration: 4s
+      productServiceCB:
+        timeoutDuration: 4s
+      mediaServiceCB:
+        timeoutDuration: 6s
+
+jwt:
+  secret: ${JWT_SECRET:change-me-shared-hmac-secret}
+
+# --- MONITORING & LOGGING ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,gateway
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    com.buy01.gateway: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%X{traceId}] %-5level %logger{36} - %msg%n"
