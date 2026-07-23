@@ -1,3 +1,9 @@
 spring:
   application:
-    name: product-service
+    name: product-service   # this exact name is how the gateway will find it
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+server:
+  port: 0   # random port — Eureka handles discovery, so hardcoding a port is pointless
