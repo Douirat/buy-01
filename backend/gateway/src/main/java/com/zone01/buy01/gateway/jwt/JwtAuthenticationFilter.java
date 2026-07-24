@@ -1,4 +1,4 @@
-package com.buy01.gateway.filter;
+package com.zone01.buy01.gateway.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
