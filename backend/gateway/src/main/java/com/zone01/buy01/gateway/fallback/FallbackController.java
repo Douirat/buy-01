@@ -1,4 +1,4 @@
-package com.buy01.gateway.config;
+package com.zone01.buy01.gateway.fallback;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
