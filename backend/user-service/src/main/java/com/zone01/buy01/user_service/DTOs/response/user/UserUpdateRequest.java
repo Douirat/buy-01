@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 public record UserUpdateRequest(
         @NotBlank(message = "Name is required")
         @Size(min = 2, max = 50)
-        String name,
+        String username,
 
         @NotBlank(message = "Email is required")
         @Email(message = "Email must be valid")

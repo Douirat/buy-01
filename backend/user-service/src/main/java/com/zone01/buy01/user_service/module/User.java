@@ -37,6 +37,11 @@ public class User {
     @Field("last_name")
     private String lastName;
 
+        @NotBlank(message = "Last name is required")
+    @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
+    @Field("last_name")
+    private String username;
+
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
     @Field("email")

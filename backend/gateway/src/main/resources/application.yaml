@@ -35,10 +35,21 @@ spring:
       routes:
 
         - id: user-service
+          # Auth endpoints (login/register) live inside User Service and
+          # must be reachable WITHOUT a JWT - they're excluded by path in
+          # JwtAuthenticationFilter's PUBLIC_PATHS list (see below).
           uri: lb://USER-SERVICE
           predicates:
-            - Path=/api/users/**
+            - Path=/api/users/**,/api/auth/**
           filters:
+            - name: RequestRateLimiter
+              # Applies to the whole route (users + auth). Login/register
+              # traffic is naturally low-volume, so this also acts as
+              # brute-force protection on /api/auth/** for free.
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@ipKeyResolver}"
             - name: CircuitBreaker
               args:
                 name: userServiceCB
@@ -49,19 +60,6 @@ spring:
                 statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
                 methods: GET
             - StripPrefix=0
-
-        - id: auth-service
-          # Auth endpoints (login/register) must be reachable WITHOUT a JWT,
-          # so this route is explicitly excluded in the JWT filter (see below).
-          uri: lb://AUTH-SERVICE
-          predicates:
-            - Path=/api/auth/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 5   # sustained req/sec allowed
-                redis-rate-limiter.burstCapacity: 10   # short burst allowed
-                key-resolver: "#{@ipKeyResolver}"
 
         - id: product-service
           uri: lb://PRODUCT-SERVICE
