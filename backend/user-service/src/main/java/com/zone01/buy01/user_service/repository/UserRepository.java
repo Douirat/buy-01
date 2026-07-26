@@ -18,6 +18,6 @@ public interface UserRepository extends MongoRepository<User, String> {
 
     Optional<User> findByName(String name);
 
-    @Query("{ '$or': [ { 'name': ?0 }, { 'email': ?0 } ] }")
-    Optional<User> findByNameOrEmail(String login);
+    @Query("{ '$or': [ { 'username': ?0 }, { 'email': ?0 } ] }")
+    Optional<User> findByUsernameOrEmail(String login);
 }
