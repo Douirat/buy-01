@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseDTO<AuthenticatedResponse> loginUser(UserLoginRequest loginRequest) {
-        User user = userRepository.findByNameOrEmail(loginRequest.identifier())
+        User user = userRepository.findByUsernameOrEmail(loginRequest.identifier())
                 .orElseThrow(InvalidCredentialsException::new);
 
         if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
