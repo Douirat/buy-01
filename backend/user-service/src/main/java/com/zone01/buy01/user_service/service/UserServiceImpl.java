@@ -26,16 +26,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseDTO<UserResponse> createUser(UserRegisterRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw DuplicateResourceException.emailAlreadyInUse(request.email());
-        }
+        // if (userRepository.existsByEmail(request.email())) {
+        //     throw DuplicateResourceException.emailAlreadyInUse(request.email());
+        // }
 
-        User user = User.builder()
-                .username(request.name())
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .role(userRepository.count() == 0 ? Role.CLIENT : Role.SELLER)
-                .build();
+        System.out.println(request.email() + " " + request.firstName() +  "++++++");
+
+        User user = request.toUser();
+
+        // System.out.println(user.toString());
+
+          user.setPassword(passwordEncoder.encode(request.password()));
 
         User savedUser = userRepository.save(user);
 
@@ -47,8 +48,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseDTO<AuthenticatedResponse> loginUser(UserLoginRequest loginRequest) {
-        User user = userRepository.findByUsernameOrEmail(loginRequest.identifier())
+        System.out.println("login cred: " +  loginRequest.identifier() + "   " + loginRequest.password());
+        User user = userRepository.findByEmail(loginRequest.identifier())
                 .orElseThrow(InvalidCredentialsException::new);
+
+        System.out.println("---> " + user.toString());
 
         if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
             throw new InvalidCredentialsException();

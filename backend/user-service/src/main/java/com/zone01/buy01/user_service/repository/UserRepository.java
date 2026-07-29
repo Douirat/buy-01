@@ -7,8 +7,6 @@ import com.zone01.buy01.user_service.module.User;
 
 import java.util.*;
 
-
-
 public interface UserRepository extends MongoRepository<User, String> {
     Optional<User> findByEmail(String email);
 

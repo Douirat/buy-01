@@ -33,9 +33,10 @@ public class AuthController {
 
     private final UserService userService;
 
-        @PostMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<ResponseDTO<AuthenticatedResponse>> loginUser(
-            @Valid @ModelAttribute UserLoginRequest loginRequest) {
+             UserLoginRequest loginRequest) {
+                System.out.println("11111111111111");
         return ResponseEntity.ok().body(userService.loginUser(loginRequest));
     }
 

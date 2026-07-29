@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.Instant;
 
@@ -22,6 +23,7 @@ import jakarta.validation.constraints.NotBlank;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 @Document(collection = "users")
 public class User {
     @Id
@@ -37,9 +39,9 @@ public class User {
     @Field("last_name")
     private String lastName;
 
-        @NotBlank(message = "Last name is required")
-    @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
-    @Field("last_name")
+    @NotBlank(message = "Username is required")
+    @Size(min = 2, max = 50, message = "Username must be between 2 and 50 characters")
+    @Field("username")
     private String username;
 
     @NotBlank(message = "Email is required")

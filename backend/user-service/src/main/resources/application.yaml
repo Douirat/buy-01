@@ -4,10 +4,14 @@ server:
 spring:
   application:
     name: user-service
+  data:
+    mongodb:
+      uri: mongodb://mongo:27017/buy01_users
 
 eureka:
   client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-  instance:
-    prefer-ip-address: true
+    enabled: false
+
+jwt:
+  secret: change-this-to-a-long-random-dev-secret
+  expiration: 86400000

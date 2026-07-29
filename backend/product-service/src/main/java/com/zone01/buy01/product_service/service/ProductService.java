@@ -1,6 +1,11 @@
 package com.zone01.buy01.product_service.service;
 
 import com.zone01.buy01.product_service.repository.ProductRepository;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.zone01.buy01.product_service.entities.Product;
 import com.zone01.buy01.product_service.exceptions.ResourceNotFoundException;
 import com.zone01.buy01.product_service.dto.ProductDto;
