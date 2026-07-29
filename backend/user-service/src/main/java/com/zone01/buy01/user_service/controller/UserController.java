@@ -18,13 +18,15 @@ import com.zone01.buy01.user_service.service.UserService;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/api/")
+@RequestMapping("/api/users/")
 public class UserController {
 
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseDTO<UserResponse>> createUser(@Valid @ModelAttribute UserRegisterRequest request) {
+    public ResponseEntity<ResponseDTO<UserResponse>> createUser(UserRegisterRequest request) {
+        System.out.println("rrrrrrrrrrrrr" + request.email());
+        
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.createUser(request));
     }
