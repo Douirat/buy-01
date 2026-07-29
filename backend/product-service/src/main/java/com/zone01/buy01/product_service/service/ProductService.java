@@ -7,6 +7,13 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.zone01.buy01.product_service.entities.Product;
+import com.zone01.buy01.product_service.exceptions.ResourceNotFoundException;
+import com.zone01.buy01.product_service.dto.ProductDto;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 
 
 @Service
@@ -18,31 +25,36 @@ public class ProductService {
     }
 
     public Product getProductById(String id) {
-        return productRepository.findById(id).orElse(null);
+        return productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found"));
     }
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
-    public Product createProduct(Product product) {
+    public Product createProduct(ProductDto dto) {
+        Product product = new Product();
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setQuantity(dto.getQuantity());
+
         return productRepository.save(product);
     }
 
-    public Product updateProduct(String id, Product product) {
-        Product existingProduct = productRepository.findById(id).orElse(null);
-        if (existingProduct != null) {
-            existingProduct.setName(product.getName());
-            existingProduct.setDescription(product.getDescription());
-            existingProduct.setPrice(product.getPrice());
-            existingProduct.setQuantity(product.getQuantity());
-            return productRepository.save(existingProduct);
-        } else {
-            return null;
-        }
+    public Product updateProduct(String id, ProductDto dto) {
+        Product existingProduct = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found"));
+        existingProduct.setName(dto.getName());
+        existingProduct.setDescription(dto.getDescription());
+        existingProduct.setPrice(dto.getPrice());
+        existingProduct.setQuantity(dto.getQuantity());
+        return productRepository.save(existingProduct);
     }
 
     public void deleteProduct(String id) {
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Product with ID " + id + " not found");
+        }
         productRepository.deleteById(id);
     }
 }

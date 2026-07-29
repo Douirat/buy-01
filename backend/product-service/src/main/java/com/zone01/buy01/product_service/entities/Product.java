@@ -19,5 +19,4 @@ public class Product {
     private double price;
     private int quantity;
     private String userId;
-
 }
