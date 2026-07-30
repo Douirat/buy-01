@@ -18,5 +18,8 @@ public class Product {
     private String description;
     private double price;
     private int quantity;
+    @Field("image_url")
+    private String imageUrl;
+    @Field("user_id")
     private String userId;
 }

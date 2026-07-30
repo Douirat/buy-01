@@ -13,4 +13,5 @@ public class ProductDto {
     private double price;
     @NotBlank(message = "Product quantity is required")
     private int quantity;
+    private String imageUrl;
 }
