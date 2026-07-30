@@ -42,23 +42,23 @@ public class ProductController {
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated() && hasRole('SELLER')")
+    @PreAuthorize("isAuthenticated()")
     public Product createProduct(@RequestBody ProductDto prodDto, @RequestParam String imageUrl, Authentication authentication) {
         String userId = authentication.getName();
         return productService.createProduct(prodDto, imageUrl, userId);
     }
 
     @PutMapping("{id}")
-    @PreAuthorize("isAuthenticated() && hasRole('SELLER')")
+    @PreAuthorize("isAuthenticated()")
     public Product updateProduct(@PathVariable String id, @RequestBody ProductDto prodDto,
             Authentication authentication) {
         String username = authentication.getName();
         String imageUrl = prodDto.getImageUrl();
-        return productService.updateProduct(id, prodDto, username, imageUrl);
+        return productService.updateProduct(id, prodDto, imageUrl, username);
     }
 
     @DeleteMapping("{id}")
-    @PreAuthorize("isAuthenticated() && hasRole('SELLER')")
+    @PreAuthorize("isAuthenticated()")
     public void deleteProduct(@PathVariable String id, Authentication authentication) {
         String username = authentication.getName();
         productService.deleteProduct(id, username);

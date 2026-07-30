@@ -32,7 +32,7 @@ public class SecurityConfig {
 
     private final String jwtSecret;
 
-    public SecurityConfig(@Value("${spring.security.oauth2.resourceserver.jwt.secret-key:change-this-to-a-long-random-dev-secret-plus-long-for-bits256length}") String jwtSecret) {
+    public SecurityConfig(@Value("${spring.security.oauth2.resourceserver.jwt.secret-key:change-this-to-a-long-random-dev-secret}") String jwtSecret) {
         this.jwtSecret = jwtSecret;
     }
 
@@ -70,8 +70,9 @@ public class SecurityConfig {
             Collection<GrantedAuthority> authorities = defaultConverter.convert(jwt);
             String role = jwt.getClaimAsString("role");
             if (role != null && !role.isBlank()) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+                authorities.add(new SimpleGrantedAuthority("ROLE_" +role.toUpperCase()));
             }
+            System.out.println("cllaisdms: " + authorities);
             return authorities == null ? List.of() : authorities;
         });
         return converter;
