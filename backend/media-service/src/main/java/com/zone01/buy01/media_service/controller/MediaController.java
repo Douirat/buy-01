@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.zone01.buy01.media_service.entities.Media;
+import com.zone01.buy01.media_service.entities.OwnerType;
 import com.zone01.buy01.media_service.service.MediaService;
 
 @RestController
@@ -20,9 +21,15 @@ public class MediaController {
         this.mediaService = mediaService;
     }
 
-    @PostMapping
-    public ResponseEntity<Media> uploadImage(@RequestParam("file") MultipartFile file, @RequestParam("productId") String productId) {
-        Media media = mediaService.uploadImage(file, productId);
+    @PostMapping("/upload")
+    public ResponseEntity<Media> uploadImage(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("ownerId") String ownerId,
+            @RequestParam("ownerType") OwnerType ownerType
+    ) {
+
+        Media media = mediaService.uploadImage(file, ownerId, ownerType);
+
         return ResponseEntity.ok(media);
     }
 }

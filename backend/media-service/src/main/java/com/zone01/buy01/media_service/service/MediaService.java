@@ -3,6 +3,7 @@ package com.zone01.buy01.media_service.service;
 import org.springframework.stereotype.Service;
 
 import com.zone01.buy01.media_service.entities.Media;
+import com.zone01.buy01.media_service.entities.OwnerType;
 import com.zone01.buy01.media_service.repository.MediaRepository;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,8 +16,20 @@ public class MediaService {
         this.mediaRepository = mediaRepository;
     }
 
-    public Media uploadImage(MultipartFile file, String productId) {
-        return mediaRepository.save(new Media(null, file.getOriginalFilename(), productId));
-    }
-    
+ public Media uploadImage(
+        MultipartFile file,
+        String ownerId,
+        OwnerType ownerType
+) {
+
+    Media media = Media.builder()
+            .path(file.getOriginalFilename()) // temporary
+            .ownerId(ownerId)
+            .ownerType(ownerType)
+            .originalFilename(file.getOriginalFilename())
+            .contentType(file.getContentType())
+            .build();
+
+    return mediaRepository.save(media);
+}
 }
