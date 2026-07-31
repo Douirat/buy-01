@@ -9,7 +9,7 @@ import com.zone01.buy01.user_service.DTOs.response.user.UserUpdateRequest;
 
 // UserService.java
 public interface UserService {
-    ResponseDTO<UserResponse> createUser(UserRegisterRequest request);
+    ResponseDTO<AuthenticatedResponse> createUser(UserRegisterRequest request);
 
     ResponseDTO<AuthenticatedResponse> loginUser(UserLoginRequest loginRequest);
 

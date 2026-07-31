@@ -25,7 +25,7 @@ public class MediaController {
     public ResponseEntity<Media> uploadImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam("ownerId") String ownerId,
-            @RequestParam("ownerType") OwnerType ownerType
+            @RequestParam("ownerType") String ownerType
     ) {
 
         Media media = mediaService.uploadImage(file, ownerId, ownerType);

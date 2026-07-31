@@ -19,13 +19,15 @@ public class MediaService {
  public Media uploadImage(
         MultipartFile file,
         String ownerId,
-        OwnerType ownerType
+        String ownerType
 ) {
+
+    OwnerType type = ownerType == "USER" ? OwnerType.USER : OwnerType.PRODUCT;
 
     Media media = Media.builder()
             .path(file.getOriginalFilename()) // temporary
             .ownerId(ownerId)
-            .ownerType(ownerType)
+            .ownerType(type)
             .originalFilename(file.getOriginalFilename())
             .contentType(file.getContentType())
             .build();

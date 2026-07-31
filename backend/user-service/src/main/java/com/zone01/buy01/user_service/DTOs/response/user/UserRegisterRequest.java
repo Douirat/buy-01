@@ -1,5 +1,7 @@
 package com.zone01.buy01.user_service.DTOs.response.user;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.zone01.buy01.user_service.module.User;
 import com.zone01.buy01.user_service.role.Role;
 
@@ -7,7 +9,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.ToString;
+
+import org.springframework.web.multipart.MultipartFile;
+
 
 public record UserRegisterRequest(
         @NotBlank(message = "First name is required")
@@ -33,8 +37,7 @@ public record UserRegisterRequest(
         @NotNull(message = "Role is required")
         Role role,
 
-        @NotBlank(message = "Avatar is required")
-        String avatar
+        MultipartFile avatar
 ) {
     public User toUser() {
         return User.builder()
@@ -44,7 +47,6 @@ public record UserRegisterRequest(
                 .email(email)
                 .password(password)
                 .role(role)
-                .avatar(avatar)
                 .build();
     }
 }

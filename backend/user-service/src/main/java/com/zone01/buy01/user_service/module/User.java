@@ -58,7 +58,7 @@ public class User {
     @Field("role")
     private Role role;
 
-    @NotBlank(message = "avatar is required")
+    // @NotBlank(message = "avatar is required")
     @Field("avatar")
     private String avatar;
 
