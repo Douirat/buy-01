@@ -8,8 +8,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8081
-          #secret-key: ${JWT_SECRET:change-this-to-a-long-random-dev-secret-plus-long-for-bits256length}
+          secret-key: ${JWT_SECRET:change-this-to-a-long-random-dev-secret-plus-long-for-bits256length}
 eureka:
   client:
     disabled: false

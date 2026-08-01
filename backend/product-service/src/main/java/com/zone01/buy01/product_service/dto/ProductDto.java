@@ -1,17 +1,33 @@
 package com.zone01.buy01.product_service.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Data @AllArgsConstructor @NoArgsConstructor
+import java.util.List;
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductDto {
     private String id;
+
     @NotBlank(message = "Product name is required")
     private String name;
     private String description;
-    @NotBlank(message = "Product price is required")
+    
+    @Positive(message = "Product price must be greater than zero")
     private double price;
-    @NotBlank(message = "Product quantity is required")
+
+    @Min(value = 0, message = "Product quantity must be zero or greater")
     private int quantity;
-    private String imageUrl;
+
+    @NotEmpty(message = "At least one image URL is required")
+    private List<@NotBlank(message = "Image URL must not be blank") String> imageUrls;
 }

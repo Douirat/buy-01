@@ -1,15 +1,14 @@
 package com.zone01.buy01.product_service.service;
 
+import com.zone01.buy01.product_service.dto.ProductDto;
+import com.zone01.buy01.product_service.entities.Product;
+import com.zone01.buy01.product_service.exceptions.ResourceNotFoundException;
 import com.zone01.buy01.product_service.repository.ProductRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-
-import com.zone01.buy01.product_service.entities.Product;
-import com.zone01.buy01.product_service.exceptions.ResourceNotFoundException;
-
-import com.zone01.buy01.product_service.dto.ProductDto;
 
 
 @Service
@@ -20,29 +19,30 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public Product getProductById(String id) {
-        return productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found"));
+    public ProductDto getProductById(String id) {
+        return productRepository.findById(id)
+                .map(this::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found"));
     }
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductDto> getAllProducts() {
+        return productRepository.findAll().stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Product createProduct(ProductDto dto, String imageUrl, String userId) {
-        Product product = new Product();
-        product.setName(dto.getName());
-        product.setDescription(dto.getDescription());
-        product.setPrice(dto.getPrice());
-        product.setQuantity(dto.getQuantity());
-        product.setImageUrl(imageUrl);
+    public ProductDto createProduct(ProductDto dto, String userId) {
+        Product product = toEntity(dto);
         product.setUserId(userId);
 
-        return productRepository.save(product);
+        Product saved = productRepository.save(product);
+        return toDto(saved);
     }
 
-    public Product updateProduct(String id, ProductDto dto, String imageUrl, String authenticatedUserEmail) {
-        Product existingProduct = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found"));
-        
+    public ProductDto updateProduct(String id, ProductDto dto, String authenticatedUserEmail) {
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found"));
+
         if (!existingProduct.getUserId().equals(authenticatedUserEmail)) {
             throw new SecurityException("You are not authorized to update this product");
         }
@@ -51,17 +51,40 @@ public class ProductService {
         existingProduct.setDescription(dto.getDescription());
         existingProduct.setPrice(dto.getPrice());
         existingProduct.setQuantity(dto.getQuantity());
-        existingProduct.setImageUrl(imageUrl);
-    
-        return productRepository.save(existingProduct);
+        existingProduct.setImageUrls(dto.getImageUrls());
+
+        return toDto(productRepository.save(existingProduct));
     }
 
     public void deleteProduct(String id, String authenticatedUserEmail) {
-        Product existingProduct = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found"));
-        
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found"));
+
         if (!existingProduct.getUserId().equals(authenticatedUserEmail)) {
             throw new SecurityException("You are not authorized to delete this product");
         }
+
         productRepository.deleteById(id);
+    }
+
+    private ProductDto toDto(Product product) {
+        return ProductDto.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .quantity(product.getQuantity())
+                .imageUrls(product.getImageUrls())
+                .build();
+    }
+
+    private Product toEntity(ProductDto dto) {
+        Product product = new Product();
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setQuantity(dto.getQuantity());
+        product.setImageUrls(dto.getImageUrls());
+        return product;
     }
 }

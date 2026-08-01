@@ -31,4 +31,7 @@ public class Media {
 
     @Field("original_filename")
     private String originalFilename;
+
+    @Field("uploaded_by")
+    private String uploadedBy;
 }

@@ -11,14 +11,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.zone01.buy01.product_service.dto.ProductDto;
-import com.zone01.buy01.product_service.entities.Product;
 import com.zone01.buy01.product_service.service.ProductService;
 
 import jakarta.annotation.security.PermitAll;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/products")
@@ -30,35 +29,34 @@ public class ProductController {
     }
 
     @GetMapping
-     @PermitAll
-    public List<Product> getAllProducts() {
+    @PermitAll
+    public List<ProductDto> getAllProducts() {
         return productService.getAllProducts();
     }
 
     @GetMapping("{id}")
     @PermitAll
-    public Product getProductById(@PathVariable String id) {
+    public ProductDto getProductById(@PathVariable String id) {
         return productService.getProductById(id);
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
-    public Product createProduct(@RequestBody ProductDto prodDto, @RequestParam String imageUrl, Authentication authentication) {
+    @PreAuthorize("hasRole('SELLER')")
+    public ProductDto createProduct(@Valid @RequestBody ProductDto prodDto, Authentication authentication) {
         String userId = authentication.getName();
-        return productService.createProduct(prodDto, imageUrl, userId);
+        return productService.createProduct(prodDto, userId);
     }
 
     @PutMapping("{id}")
-    @PreAuthorize("isAuthenticated()")
-    public Product updateProduct(@PathVariable String id, @RequestBody ProductDto prodDto,
+    @PreAuthorize("hasRole('SELLER')")
+    public ProductDto updateProduct(@PathVariable String id, @Valid @RequestBody ProductDto prodDto,
             Authentication authentication) {
         String username = authentication.getName();
-        String imageUrl = prodDto.getImageUrl();
-        return productService.updateProduct(id, prodDto, imageUrl, username);
+        return productService.updateProduct(id, prodDto, username);
     }
 
     @DeleteMapping("{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('SELLER')")
     public void deleteProduct(@PathVariable String id, Authentication authentication) {
         String username = authentication.getName();
         productService.deleteProduct(id, username);
