@@ -127,7 +127,8 @@ resilience4j:
         timeoutDuration: 6s
 
 jwt:
-  secret: ${JWT_SECRET:change-me-shared-hmac-secret}
+  secret: 0123456789abcdef0123456789abcdef0123456789abcdef
+  expiration: 86400000
 
 # --- MONITORING & LOGGING ---
 management:

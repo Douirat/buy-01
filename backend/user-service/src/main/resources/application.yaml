@@ -23,5 +23,5 @@ eureka:
     instance-id: ${spring.application.name}:${server.port}
 
 jwt:
-  secret: change-this-to-a-long-random-dev-secret
+  secret: 0123456789abcdef0123456789abcdef0123456789abcdef
   expiration: 86400000

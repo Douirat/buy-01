@@ -1,11 +1,6 @@
 spring:
   application:
     name: MEDIA-SERVICE
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          secret-key: ${JWT_SECRET:change-this-to-a-long-random-dev-secret-for-dev-use-only}
 
 server:
   port: 8083
@@ -14,9 +9,12 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
-
   instance:
     prefer-ip-address: true
+
+jwt:
+  secret: 0123456789abcdef0123456789abcdef0123456789abcdef
+  expiration: 86400000
 
 media:
   storage:
