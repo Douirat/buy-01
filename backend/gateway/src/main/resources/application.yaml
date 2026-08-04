@@ -12,87 +12,89 @@ spring:
 
   cloud:
     gateway:
-      # --- Global CORS (Cross-Origin) config, applied before routes ---
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOrigins:
-              - "http://localhost:4200"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - PATCH
-              - OPTIONS
-            allowedHeaders: "*"
-            allowCredentials: true
+      server:
+        webflux:
+          # --- Global CORS (Cross-Origin) config, applied before routes ---
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins:
+                  - "http://localhost:4200"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - PATCH
+                  - OPTIONS
+                allowedHeaders: "*"
+                allowCredentials: true
 
-      # --- ROUTING ---
-      # Each route maps an incoming path (predicate) to a downstream service.
-      # `lb://SERVICE-NAME` = "ask Eureka for instances of SERVICE-NAME and
-      # LOAD BALANCE across them" -> covers routing + load balancing together.
-      routes:
+          # --- ROUTING ---
+          # Each route maps an incoming path (predicate) to a downstream service.
+          # `lb://SERVICE-NAME` = "ask Eureka for instances of SERVICE-NAME and
+          # LOAD BALANCE across them" -> covers routing + load balancing together.
+          routes:
 
-        - id: user-service
-          # Auth endpoints (login/register) live inside User Service and
-          # must be reachable WITHOUT a JWT - they're excluded by path in
-          # JwtAuthenticationFilter's PUBLIC_PATHS list (see below).
-          uri: lb://USER-SERVICE
-          predicates:
-            - Path=/api/users/**,/api/auth/**
-          filters:
-            - name: RequestRateLimiter
-              # Applies to the whole route (users + auth). Login/register
-              # traffic is naturally low-volume, so this also acts as
-              # brute-force protection on /api/auth/** for free.
-              args:
-                redis-rate-limiter.replenishRate: 10
-                redis-rate-limiter.burstCapacity: 20
-                key-resolver: "#{@ipKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: userServiceCB
-                fallbackUri: forward:/fallback/users
-            - name: Retry
-              args:
-                retries: 2
-                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
-                methods: GET
-            - StripPrefix=0
+            - id: user-service
+              # Auth endpoints (login/register) live inside User Service and
+              # must be reachable WITHOUT a JWT - they're excluded by path in
+              # JwtAuthenticationFilter's PUBLIC_PATHS list (see below).
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/users/**
+              filters:
+                - name: RequestRateLimiter
+                  # Applies to the whole route (users + auth). Login/register
+                  # traffic is naturally low-volume, so this also acts as
+                  # brute-force protection on /api/auth/** for free.
+                  args:
+                    redis-rate-limiter.replenishRate: 10
+                    redis-rate-limiter.burstCapacity: 20
+                    key-resolver: "#{@ipKeyResolver}"
+                - name: CircuitBreaker
+                  args:
+                    name: userServiceCB
+                    fallbackUri: forward:/fallback/users
+                - name: Retry
+                  args:
+                    retries: 2
+                    statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+                    methods: GET
+                - StripPrefix=0
 
-        - id: product-service
-          uri: lb://PRODUCT-SERVICE
-          predicates:
-            - Path=/api/products/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 20
-                redis-rate-limiter.burstCapacity: 40
-                key-resolver: "#{@userKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: productServiceCB
-                fallbackUri: forward:/fallback/products
+            - id: product-service
+              uri: lb://PRODUCT-SERVICE
+              predicates:
+                - Path=/api/products/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 20
+                    redis-rate-limiter.burstCapacity: 40
+                    key-resolver: "#{@userKeyResolver}"
+                - name: CircuitBreaker
+                  args:
+                    name: productServiceCB
+                    fallbackUri: forward:/fallback/products
 
-        - id: media-service
-          uri: lb://MEDIA-SERVICE
-          predicates:
-            - Path=/api/media/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: mediaServiceCB
-                fallbackUri: forward:/fallback/media
+            - id: media-service
+              uri: lb://MEDIA-SERVICE
+              predicates:
+                - Path=/api/media/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: mediaServiceCB
+                    fallbackUri: forward:/fallback/media
 
-        # --- PROTOCOL TRANSLATION example ---
-        # Plain HTTP clients hit /ws/** and the gateway upgrades/forwards
-        # to a WebSocket-speaking backend (e.g. a notifications service).
-        - id: notification-ws
-          uri: lb:ws://NOTIFICATION-SERVICE
-          predicates:
-            - Path=/ws/**
+            # --- PROTOCOL TRANSLATION example ---
+            # Plain HTTP clients hit /ws/** and the gateway upgrades/forwards
+            # to a WebSocket-speaking backend (e.g. a notifications service).
+            - id: notification-ws
+              uri: lb:ws://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/ws/**
 
 eureka:
   client:
@@ -143,9 +145,15 @@ management:
     tags:
       application: ${spring.application.name}
 
+# logging:
+#   level:
+#     org.springframework.cloud.gateway: INFO
+#     com.buy01.gateway: DEBUG
+#   pattern:
+#     console: "%d{yyyy-MM-dd HH:mm:ss} [%X{traceId}] %-5level %logger{36} - %msg%n"
 logging:
   level:
-    org.springframework.cloud.gateway: INFO
-    com.buy01.gateway: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%X{traceId}] %-5level %logger{36} - %msg%n"
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping: TRACE
+    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: TRACE
+    org.springframework.web: DEBUG

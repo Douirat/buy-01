@@ -27,8 +27,8 @@ public class UserController {
     consumes = MediaType.MULTIPART_FORM_DATA_VALUE
 )
 public ResponseEntity<ResponseDTO<AuthenticatedResponse>> createUser(
-        @ModelAttribute UserRegisterRequest request) {
-
+        UserRegisterRequest request) {
+System.out.println("fuck you all --------> here");
     return ResponseEntity.status(HttpStatus.CREATED)
             .body(userService.createUser(request));
 }

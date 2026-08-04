@@ -38,6 +38,7 @@ public record UserRegisterRequest(
         Role role,
 
         MultipartFile avatar
+        
 ) {
     public User toUser() {
         return User.builder()

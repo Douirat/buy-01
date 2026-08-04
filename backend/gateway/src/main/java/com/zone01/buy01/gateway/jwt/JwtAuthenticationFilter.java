@@ -33,11 +33,11 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     private final SecretKey signingKey;
 
-    private static final List<String> PUBLIC_PATHS = List.of(
-            "/api/auth/login",
-            "/api/auth/register",
-            "/actuator/health"
-    );
+private static final List<String> PUBLIC_PATHS = List.of(
+    "/api/auth/login",
+    "/api/users/register",
+    "/actuator/health"
+);
 
     public JwtAuthenticationFilter(@Value("${jwt.secret}") String secret) {
         this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));

@@ -20,7 +20,7 @@ import com.zone01.buy01.user_service.mapper.UserMapper;
 import com.zone01.buy01.user_service.media.MediaServiceClient;
 import com.zone01.buy01.user_service.module.User;
 import com.zone01.buy01.user_service.repository.UserRepository;
-import com.zone01.buy01.user_service.role.Role;
+
 
 @AllArgsConstructor
 @Service
@@ -33,14 +33,23 @@ public class UserServiceImpl implements UserService {
 
         @Override
         public ResponseDTO<AuthenticatedResponse>  createUser(UserRegisterRequest request) {
+
+                System.out.println(request);
+
                 if (userRepository.existsByEmail(request.email()) || userRepository.existsByUsername(request.email())) {
                         throw DuplicateResourceException.emailAlreadyInUse(request.email());
                 }
 
+
+
                 User user = request.toUser();
 
+                System.out.println(user.toString());
+
+                
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
                 user.setCreatedAt(Instant.now());
+                
 
                 User saved = userRepository.save(user); // saved first — Media Service needs the userId as ownerId
 
@@ -55,6 +64,9 @@ public class UserServiceImpl implements UserService {
                                                 e.getMessage()));
                         }
                 }
+
+
+
 
                 String token = jwtService.generateToken(saved.getId(), saved.getRole().name());
 
