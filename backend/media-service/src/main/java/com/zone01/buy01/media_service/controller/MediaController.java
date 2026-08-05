@@ -34,14 +34,13 @@ public class MediaController {
     }
 
     @PostMapping("/upload")
-    @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<Media> uploadImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam("ownerId") String ownerId,
             @RequestParam("ownerType") String ownerType,
-            Authentication authentication
-    ) {
-        Media media = mediaService.uploadImage(file, ownerId, ownerType, authentication.getName());
+            Authentication authentication) {
+        System.out.println("touched ----------> ((())(())(()))");
+        Media media = mediaService.uploadImage(file, ownerId, ownerType);
         return ResponseEntity.ok(media);
     }
 
@@ -53,7 +52,8 @@ public class MediaController {
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(media.getContentType()))
-                .header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(Duration.ofDays(1)).cachePublic().getHeaderValue())
+                .header(HttpHeaders.CACHE_CONTROL,
+                        CacheControl.maxAge(Duration.ofDays(1)).cachePublic().getHeaderValue())
                 .body(resource);
     }
 

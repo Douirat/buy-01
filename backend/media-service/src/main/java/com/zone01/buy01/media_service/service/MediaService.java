@@ -50,7 +50,7 @@ public class MediaService {
         }
     }
 
-    public Media uploadImage(MultipartFile file, String ownerId, String ownerType, String authenticatedUserId) {
+    public Media uploadImage(MultipartFile file, String ownerId, String ownerType) {
         validateFile(file);
 
         OwnerType type;
@@ -60,9 +60,9 @@ public class MediaService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ownerType must be USER or PRODUCT");
         }
 
-        if (type == OwnerType.USER && !authenticatedUserId.equals(ownerId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated user does not own this media");
-        }
+        // if (type == OwnerType.USER && !authenticatedUserId.equals(ownerId)) {
+        //     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated user does not own this media");
+        // }
 
         String originalFilename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         if (originalFilename.contains("..")) {
@@ -85,7 +85,6 @@ public class MediaService {
                 .ownerType(type)
                 .originalFilename(originalFilename)
                 .contentType(Objects.requireNonNull(file.getContentType()))
-                .uploadedBy(authenticatedUserId)
                 .build();
 
         return mediaRepository.save(media);
