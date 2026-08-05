@@ -47,12 +47,14 @@ public class UserServiceImpl implements UserService {
 
                 User user = request.toUser();
 
-                System.out.println(user.toString());
+          
 
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
                 user.setCreatedAt(Instant.now());
 
                 User saved = userRepository.save(user); // saved first — Media Service needs the userId as ownerId
+
+                System.out.println(user.toString());
 
                 String token = jwtService.generateToken(saved.getId(), saved.getRole().name());
 
@@ -109,7 +111,7 @@ public class UserServiceImpl implements UserService {
                                                 saved.getLastName(), saved.getEmail(), saved.getRole().name()));
         }
 
-        //TODO: Change this to kafka.
+        //TODO: Change this to kafka
         // send an http request to the media service for user registration:
         private String uploadAvatarToMediaService(String userId, MultipartFile avatar, String token) {
                 try {
@@ -131,7 +133,7 @@ public class UserServiceImpl implements UserService {
                         return media != null ? media.getId() : null;
                 } catch (Exception e) {
                         System.out.println(
-                                        String.format("Avatar upload failed for user {}: {}", userId, e.getMessage()));
+                                        String.format("Avatar upload failed for user %s: %s", userId, e.getMessage()));
                         return null; // user is registered without an avatar; they can upload one later
                 }
         }

@@ -1,6 +1,9 @@
 spring:
   application:
     name: MEDIA-SERVICE
+  data:
+    mongodb:
+      uri: mongodb://mongo:27017/media_db
 
 server:
   port: 8083

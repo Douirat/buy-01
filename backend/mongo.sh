@@ -1,5 +1,5 @@
 docker run -d \
-  --name user \
+  --name mongo \
   -p 27017:27017 \
   -v mongo-data:/data/db \
   mongo:7
