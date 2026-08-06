@@ -30,8 +30,7 @@ public class MediaService {
             "image/jpeg",
             "image/png",
             "image/gif",
-            "image/webp"
-    );
+            "image/webp");
 
     private static final long MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 
@@ -39,7 +38,7 @@ public class MediaService {
     private final Path storageLocation;
 
     public MediaService(MediaRepository mediaRepository,
-                        @Value("${media.storage.location:uploads/images}") String storageLocation) {
+            @Value("${media.storage.location:uploads/images}") String storageLocation) {
         this.mediaRepository = mediaRepository;
         this.storageLocation = Paths.get(storageLocation).toAbsolutePath().normalize();
 
@@ -50,7 +49,7 @@ public class MediaService {
         }
     }
 
-    public Media uploadImage(MultipartFile file, String ownerId, String ownerType) {
+    public Media uploadImage(MultipartFile file, String ownerId, String ownerType, String authenticatedUserId) {
         validateFile(file);
 
         OwnerType type;
@@ -60,9 +59,9 @@ public class MediaService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ownerType must be USER or PRODUCT");
         }
 
-        // if (type == OwnerType.USER && !authenticatedUserId.equals(ownerId)) {
-        //     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated user does not own this media");
-        // }
+        if (type == OwnerType.USER && !authenticatedUserId.equals(ownerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated user does not own this media");
+        }
 
         String originalFilename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         if (originalFilename.contains("..")) {
@@ -118,7 +117,8 @@ public class MediaService {
         try {
             Files.deleteIfExists(file);
         } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete stored media file", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete stored media file",
+                    e);
         }
 
         mediaRepository.deleteById(id);

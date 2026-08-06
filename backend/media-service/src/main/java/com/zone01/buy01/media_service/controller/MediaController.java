@@ -34,13 +34,13 @@ public class MediaController {
     }
 
     @PostMapping("/upload")
+    @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<Media> uploadImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam("ownerId") String ownerId,
             @RequestParam("ownerType") String ownerType,
             Authentication authentication) {
-        System.out.println("touched ----------> ((())(())(()))");
-        Media media = mediaService.uploadImage(file, ownerId, ownerType);
+        Media media = mediaService.uploadImage(file, ownerId, ownerType, authentication.getName());
         return ResponseEntity.ok(media);
     }
 
