@@ -41,10 +41,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/media/images/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/media/images/upload").hasRole("SELLER")
-                        .requestMatchers(HttpMethod.DELETE, "/media/images/**").hasRole("SELLER")
-                        .anyRequest().authenticated()
+                        // .requestMatchers(HttpMethod.GET, "/media/images/**").permitAll()
+                        // .requestMatchers(HttpMethod.POST, "/media/images/upload").hasRole("SELLER")
+                        // .requestMatchers(HttpMethod.DELETE, "/media/images/**").hasRole("SELLER")
+                        // .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                     );
     
         return http.build();

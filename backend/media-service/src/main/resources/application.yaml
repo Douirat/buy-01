@@ -6,15 +6,15 @@ spring:
       uri: mongodb://mongo:27017/media_db
   kafka:
     bootstrap-servers: localhost:9092
-    # consumer:
-    #   group-id: media-service-group
-    #   auto-offset-reset: earliest
-    #   key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    #   value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+   
+  logging:
+    level:
+      org.springframework.boot.autoconfigure.kafka: DEBUG
+  debug:
+    true
 server:
   port: 8083
 

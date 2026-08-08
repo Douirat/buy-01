@@ -21,6 +21,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.zone01.buy01.media_service.entities.Media;
 import com.zone01.buy01.media_service.entities.OwnerType;
+import com.zone01.buy01.media_service.event.MediaEventPublisher;
+import com.zone01.buy01.media_service.event.MediaUploadedEvent;
 import com.zone01.buy01.media_service.repository.MediaRepository;
 
 @Service
@@ -36,11 +38,14 @@ public class MediaService {
 
     private final MediaRepository mediaRepository;
     private final Path storageLocation;
+    private final MediaEventPublisher publisher;
 
     public MediaService(MediaRepository mediaRepository,
-            @Value("${media.storage.location:uploads/images}") String storageLocation) {
+            @Value("${media.storage.location:uploads/images}") String storageLocation,
+            MediaEventPublisher publisher) {
         this.mediaRepository = mediaRepository;
         this.storageLocation = Paths.get(storageLocation).toAbsolutePath().normalize();
+        this.publisher = publisher;
 
         try {
             Files.createDirectories(this.storageLocation);
@@ -49,44 +54,27 @@ public class MediaService {
         }
     }
 
-    public Media uploadImage(MultipartFile file, String ownerId, String ownerType, String authenticatedUserId) {
+    public Media uploadImage(MultipartFile file, String ownerId) {
         validateFile(file);
+        String mediaId = UUID.randomUUID().toString();
+        Media media = new Media();
+        media.setId(mediaId);
+        media.setOwnerId(ownerId);
+        // media.setOwnerType(OwnerType.PRODUCT);
+        media.setFilename(StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename())));
+        media.setContentType(file.getContentType());
+        media.setImagePath(mediaId + "_" + media.getFilename());
+        mediaRepository.save(media);
 
-        OwnerType type;
-        try {
-            type = OwnerType.valueOf(ownerType.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ownerType must be USER or PRODUCT");
-        }
-
-        if (type == OwnerType.USER && !authenticatedUserId.equals(ownerId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated user does not own this media");
-        }
-
-        String originalFilename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        if (originalFilename.contains("..")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid file name");
-        }
-
-        String extension = StringUtils.getFilenameExtension(originalFilename);
-        String storedFilename = UUID.randomUUID().toString() + (extension != null ? "." + extension : "");
-        Path destination = storageLocation.resolve(storedFilename);
-
-        try (InputStream inputStream = file.getInputStream()) {
-            Files.copy(inputStream, destination, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to store file", e);
-        }
-
-        Media media = Media.builder()
-                .path(storedFilename)
-                .ownerId(ownerId)
-                .ownerType(type)
-                .originalFilename(originalFilename)
-                .contentType(Objects.requireNonNull(file.getContentType()))
-                .build();
-
-        return mediaRepository.save(media);
+        MediaUploadedEvent event = new MediaUploadedEvent(
+                mediaId,
+                ownerId,
+                media.getFilename(),
+                media.getContentType(),
+                java.time.Instant.now()
+        );
+        publisher.publish(event);
+        return new Media(media.getId(), media.getOwnerId(), media.getFilename(), media.getContentType(), media.getImagePath());
     }
 
     public Media getMediaById(String id) {
@@ -96,7 +84,7 @@ public class MediaService {
 
     public Resource loadAsResource(Media media) {
         try {
-            Path file = storageLocation.resolve(media.getPath()).normalize();
+            Path file = storageLocation.resolve(media.getImagePath()).normalize();
             Resource resource = new UrlResource(file.toUri());
             if (!resource.exists() || !resource.isReadable()) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Media file not found");
@@ -113,7 +101,7 @@ public class MediaService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated user does not own this media");
         }
 
-        Path file = storageLocation.resolve(existing.getPath()).normalize();
+        Path file = storageLocation.resolve(existing.getImagePath()).normalize();
         try {
             Files.deleteIfExists(file);
         } catch (IOException e) {

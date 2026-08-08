@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class MediaEventPublisher {
 
-    private final KafkaTemplate<String, MediaUploadedEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public MediaEventPublisher(
-            KafkaTemplate<String, MediaUploadedEvent> kafkaTemplate) {
+            KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 

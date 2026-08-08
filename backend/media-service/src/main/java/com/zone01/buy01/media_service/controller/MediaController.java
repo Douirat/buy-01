@@ -5,6 +5,7 @@ import java.time.Duration;
 import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,15 +34,14 @@ public class MediaController {
         this.mediaService = mediaService;
     }
 
-    @PostMapping("/upload")
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<Media> uploadImage(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("ownerId") String ownerId,
-            @RequestParam("ownerType") String ownerType,
             Authentication authentication) {
-        Media media = mediaService.uploadImage(file, ownerId, ownerType, authentication.getName());
-        return ResponseEntity.ok(media);
+        String ownerId = authentication.getName();
+        Media media = mediaService.uploadImage(file, ownerId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(media);
     }
 
     @GetMapping("/{id}")

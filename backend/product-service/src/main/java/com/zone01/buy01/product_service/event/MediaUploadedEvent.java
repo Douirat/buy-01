@@ -1,4 +1,4 @@
-package com.zone01.buy01.media_service.event;
+package com.zone01.buy01.product_service.event;
 
 import java.time.Instant;
 

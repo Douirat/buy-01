@@ -17,21 +17,18 @@ public class Media {
     @Id
     private String id;
 
-    @Field("path")
-    private String path;
+    @Field("image_path")
+    private String imagePath;
 
     @Field("owner_id")
     private String ownerId;
 
-    @Field("owner_type")
-    private OwnerType ownerType;
+    // @Field("owner_type")
+    // private OwnerType ownerType;
 
     @Field("content_type")
     private String contentType;
 
-    @Field("original_filename")
-    private String originalFilename;
-
-    @Field("uploaded_by")
-    private String uploadedBy;
+    @Field("filename")
+    private String filename;
 }
